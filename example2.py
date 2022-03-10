@@ -4,13 +4,14 @@ from skimage.color import rgb2gray, rgba2rgb
 from skimage.filters import threshold_otsu
 from skimage.morphology import closing
 from skimage.measure import label, regionprops, regionprops_table
-from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, StackingClassifier
+from sklearn.ensemble import GradientBoostingClassifier, RandomForestClassifier, StackingClassifier, ExtraTreesClassifier, AdaBoostClassifier, HistGradientBoostingClassifier
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report
 from sklearn.svm import LinearSVC
 from sklearn.pipeline import make_pipeline
 from sklearn.linear_model import LogisticRegression
 from sklearn.preprocessing import StandardScaler
+from sklearn.tree import DecisionTreeClassifier
 from matplotlib import pyplot as plt
 import pandas as pd
 import numpy as np
@@ -106,11 +107,11 @@ for j in range(len(dir_image_path_list)):
 
         df = pd.concat([df, table], axis=0)
 
-print(table)
+#print(table)
 
 df.head()
 
-print(df)
+#print(df)
 
 
 # Implementación del aprendizaje automático.
@@ -128,7 +129,7 @@ columns = X.columns
 X_train, X_test, y_train, y_test = train_test_split(
 X, y, test_size=0.25, random_state=123, stratify=y)
 
-
+print("GradientBoostingClassifier")
 # Se aplica el clasiicador, en este caso el clasificador de aumento de gradiente
 clf = GradientBoostingClassifier(n_estimators=50, max_depth=3, random_state=123)
 clf.fit(X_train, y_train)
@@ -138,6 +139,7 @@ print(classification_report(clf.predict(X_test), y_test))
 print(f"Test Accuracy: {np.mean(clf.predict(X_test) == y_test)*100:.2f}%")
 
 # Se aplica el clasiicador, en este caso el clasificador de aumento de gradiente
+print("RandomForestClassifier")
 clf = RandomForestClassifier(n_estimators=50, max_depth=3, random_state=123)
 clf.fit(X_train, y_train)
 #print confusion matrix of test set
@@ -145,12 +147,38 @@ print(classification_report(clf.predict(X_test), y_test))
 #print accuracy score of the test set
 print(f"Test Accuracy: {np.mean(clf.predict(X_test) == y_test)*100:.2f}%")
 
+print("StackingClassifier")
 estimators = [
 ('rf', RandomForestClassifier(n_estimators=10, random_state=42)),
 ('svr', make_pipeline(StandardScaler(),
 LinearSVC(random_state=42)))
 ]
 clf = StackingClassifier(estimators=estimators, final_estimator=LogisticRegression())
+clf.fit(X_train, y_train)
+print(classification_report(clf.predict(X_test), y_test))
+print(f"Test Accuracy: {np.mean(clf.predict(X_test) == y_test)*100:.2f}%")
+
+print("ExtraTreesClassifier")
+clf = ExtraTreesClassifier(n_estimators=10, max_depth=None,min_samples_split=2, random_state=0)
+clf.fit(X_train, y_train)
+print(classification_report(clf.predict(X_test), y_test))
+print(f"Test Accuracy: {np.mean(clf.predict(X_test) == y_test)*100:.2f}%")
+
+
+print("DecisionTreesClassifier")
+clf = DecisionTreeClassifier(max_depth=None,min_samples_split=2, random_state=0)
+clf.fit(X_train, y_train)
+print(classification_report(clf.predict(X_test), y_test))
+print(f"Test Accuracy: {np.mean(clf.predict(X_test) == y_test)*100:.2f}%")
+
+print("DecisionTreesClassifier")
+clf = AdaBoostClassifier(n_estimators=100)
+clf.fit(X_train, y_train)
+print(classification_report(clf.predict(X_test), y_test))
+print(f"Test Accuracy: {np.mean(clf.predict(X_test) == y_test)*100:.2f}%")
+
+print("HistGradientBoostingClassifier")
+clf = HistGradientBoostingClassifier(max_iter=100).fit(X_train, y_train)
 clf.fit(X_train, y_train)
 print(classification_report(clf.predict(X_test), y_test))
 print(f"Test Accuracy: {np.mean(clf.predict(X_test) == y_test)*100:.2f}%")
